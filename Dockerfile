@@ -1,9 +1,17 @@
-FROM node:16
+# Use a supported LTS Node.js version with Alpine for smaller images
+FROM node:20-alpine AS builder
 
-COPY . .
+# Set the working directory inside the container
+WORKDIR /app
 
-RUN npm install
+# Copy package.json and package-lock.json first to leverage Docker layer caching
+# This ensures npm install is only re-run if dependencies change
+COPY package*.json ./
 
+# Install production dependencies only for a smaller, more secure image
+RUN npm install --omit=dev
+
+# Copy the rest of your application code
 COPY . .
 
 # Inform Docker that the container listens on port 8080 at runtime
